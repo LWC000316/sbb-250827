@@ -21,4 +21,6 @@ public class Answer {
 
     @ManyToOne // 필수
     private Question question;
+
+
 }

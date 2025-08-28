@@ -4,7 +4,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -94,15 +96,42 @@ class QuestionRepositoryTest {
 	}
 
 	@Test
-	@DisplayName("데이터 저장")
+	@DisplayName("답변 데이터 생성 - repository 버전")
 	void t8() {
 		Question question = this.questionRepository.findById(2).get();
 
 		Answer a = new Answer();
 		a.setContent("네 자동으로 생성됩니다.");
 		a.setQuestion(question);  // 어떤 질문의 답변인지 알기위해서 Question 객체가 필요하다.
-
 		a.setCreateDate(LocalDateTime.now());
 		this.answerRepository.save(a);
+	}
+
+	@Test
+	@DisplayName("답변 데이터 생성 - OneToMany 버전")
+	@Transactional
+	@Rollback(false)
+	void t9() {
+		Question question2 = this.questionRepository.findById(2).get();
+
+		int beforeSize = question2.getAnswers().size();
+		question2.addAnswer("네 자동으로 생성됩니다.");
+
+		int afterSize = question2.getAnswers().size();
+		assertEquals(beforeSize + 1, afterSize);
+	}
+
+	@Test
+	@DisplayName("2번 질문의 답글 조회")
+	@Transactional
+	void t10() {
+		Question q2 = questionRepository.findById(2).get();
+		Answer answer = q2.getAnswers().get(0);
+
+		System.out.println("question2.getSubject() = " + q2.getSubject());
+
+        //Answer answer = q2.getAnswers().get(0);
+		//System.out.println("answer = " + answer.getContent());
+
 	}
 }
